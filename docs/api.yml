@@ -184,15 +184,3 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-
-### User Authentication and Authorization:
-
-- User registration, login, and role-based access control (admin and annotator).
-
-- Support for OAuth (Google)
-
-## Annotation Features:
-
-- Categorize texts and images.
-
-- Support for
