@@ -1,0 +1,198 @@
+openapi: '3.0.3'
+info:
+  title: Annotate API
+  version: '1.0'
+servers:
+  - url: https://localhost:3000
+paths:
+  /auth:
+    post:
+      summary: Authenticate user
+      description: Authenticate using email/password or OAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/LocalAuth'
+                - $ref: '#/components/schemas/OAuthRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Authentication failed
+
+  /users:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Invalid input
+
+  /annotations:
+    post:
+      summary: Create annotation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+      responses:
+        '201':
+          description: Annotation created
+        '401':
+          description: Unauthorized
+
+    get:
+      summary: Get annotations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of annotations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Annotation'
+
+  /admin/users:
+    get:
+      summary: Get all users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden - Admin only
+
+components:
+  schemas:
+    LocalAuth:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    OAuthRequest:
+      type: object
+      required:
+        - provider
+        - token
+      properties:
+        provider:
+          type: string
+          enum: [google]
+        token:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, annotator]
+
+    UserRegistration:
+      type: object
+      required:
+        - email
+        - password
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [admin, annotator]
+
+    Annotation:
+      type: object
+      required:
+        - documentId
+        - type
+        - content
+      properties:
+        id:
+          type: string
+        documentId:
+          type: string
+        type:
+          type: string
+          enum: [text, image]
+        content:
+          type: object
+        userId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+### User Authentication and Authorization:
+
+- User registration, login, and role-based access control (admin and annotator).
+
+- Support for OAuth (Google)
+
+## Annotation Features:
+
+- Categorize texts and images.
+
+- Support for
