@@ -1,6 +1,6 @@
 openapi: '3.0.3'
 info:
-  title: Annotate API
+  title: API
   version: '1.0'
 servers:
   - url: https://localhost:3000
@@ -42,58 +42,64 @@ paths:
         '400':
           description: Invalid input
 
-  /annotations:
+  /datasets:
     post:
-      summary: Create annotation
+      summary: Create a new dataset
       security:
         - BearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Annotation'
+              type: object
+              required:
+                - file
+                - textColumn
+                - targetColumn
+                - labelMapping
+                - type
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file containing the dataset
+                mediaFiles:
+                  type: string
+                  format: binary
+                  description: ZIP file containing media files (required if type is multimodal)
+                type:
+                  type: string
+                  enum: [text, multimodal]
+                  description: Type of dataset - text only or multimodal
+                textColumn:
+                  type: string
+                  description: Name of the column containing text data
+                targetColumn:
+                  type: string
+                  description: Name of the column containing target labels
+                mediaPathColumn:
+                  type: string
+                  description: Name of the column containing paths to media files (required if type is multimodal)
+                labelMapping:
+                  type: object
+                  description: Mapping of original labels to desired labels
+                  additionalProperties:
+                    type: string
+                  example:
+                    Y: "Yes"
+                    N: "No"
       responses:
         '201':
-          description: Annotation created
+          description: Dataset created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+        '400':
+          description: Invalid input
         '401':
           description: Unauthorized
-
-    get:
-      summary: Get annotations
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: documentId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of annotations
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Annotation'
-
-  /admin/users:
-    get:
-      summary: Get all users
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '403':
-          description: Forbidden - Admin only
 
 components:
   schemas:
@@ -137,16 +143,12 @@ components:
           type: string
         email:
           type: string
-        role:
-          type: string
-          enum: [admin, annotator]
 
     UserRegistration:
       type: object
       required:
         - email
         - password
-        - role
       properties:
         email:
           type: string
@@ -154,26 +156,27 @@ components:
         password:
           type: string
           format: password
-        role:
-          type: string
-          enum: [admin, annotator]
 
-    Annotation:
+    Dataset:
       type: object
-      required:
-        - documentId
-        - type
-        - content
       properties:
         id:
           type: string
-        documentId:
+        name:
           type: string
         type:
           type: string
-          enum: [text, image]
-        content:
+          enum: [text, multimodal]
+        textColumn:
+          type: string
+        targetColumn:
+          type: string
+        mediaPathColumn:
+          type: string
+        labelMapping:
           type: object
+          additionalProperties:
+            type: string
         userId:
           type: string
         createdAt:
