@@ -5,4 +5,4 @@
 ## Links
 
 - [Functional Requirements](docs/requirements.md)
-- [OpenAPI Specification](docs/spec.yml)
+- [OpenAPI Specification](https://github.com/tmdh/annotate/blob/main/docs/api.yml)
